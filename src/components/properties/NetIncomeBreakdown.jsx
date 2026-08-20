@@ -13,9 +13,10 @@ export default function NetIncomeBreakdown({ property }) {
 
   // Uscite annuali
   const annualTax = rent * 12 * (property.tax_rate || 0) / 100 * ownership / 100;
+  const annualCondoFee = condoFee * 12;
   const annualCosts = monthlyCosts * 12;
   const annualMortgage = mortgage * 12;
-  const totalAnnualExpenses = annualTax + annualCosts + annualMortgage;
+  const totalAnnualExpenses = annualTax + annualCondoFee + annualCosts + annualMortgage;
 
   // Rendita netta
   const annualNet = annualIncome - totalAnnualExpenses;
@@ -36,6 +37,7 @@ export default function NetIncomeBreakdown({ property }) {
       <p className="mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400"><TrendingDown size={14} /> Uscite annuali</p>
       <div className="space-y-1.5">
         <div className="flex items-center justify-between text-sm"><span className="text-slate-600 dark:text-slate-400">Tasse ({property.tax_rate || 0}% cedolare)</span><span className="font-semibold text-slate-900 dark:text-slate-100">{fmt(annualTax)}</span></div>
+        <div className="flex items-center justify-between text-sm"><span className="text-slate-600 dark:text-slate-400">Quota condominiale da versare</span><span className="font-semibold text-slate-900 dark:text-slate-100">{fmt(annualCondoFee)}</span></div>
         <div className="flex items-center justify-between text-sm"><span className="text-slate-600 dark:text-slate-400">Costi e spese</span><span className="font-semibold text-slate-900 dark:text-slate-100">{fmt(annualCosts)}</span></div>
         {mortgage > 0 && <div className="flex items-center justify-between text-sm"><span className="text-slate-600 dark:text-slate-400">Mutuo (12 rate)</span><span className="font-semibold text-slate-900 dark:text-slate-100">{fmt(annualMortgage)}</span></div>}
         <div className="flex items-center justify-between border-t border-slate-200 dark:border-slate-700 pt-1.5 text-sm"><span className="font-semibold text-slate-600 dark:text-slate-400">Totale uscite</span><span className="font-bold text-slate-900 dark:text-slate-100">{fmt(totalAnnualExpenses)} /anno</span></div>
