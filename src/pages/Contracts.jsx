@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Plus, FileText, X, Download } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useConfirm } from '@/components/ConfirmProvider';
+import { toast } from '@/components/ui/use-toast';
 import { useModalParam } from '@/hooks/useModalParam';
 import AppShell from '@/components/AppShell';
 import ContractCard from '@/components/contracts/ContractCard';
@@ -15,7 +16,23 @@ export default function Contracts() {
   const load = () => Promise.all([base44.entities.Contract.list('-created_date'), base44.entities.Property.list('-created_date')]).then(([c, p]) => { setContracts(c); setProperties(p); }).finally(() => setLoading(false));
   useEffect(() => { load(); }, []);
   const propName = (id) => properties.find((p) => p.id === id)?.name || '';
-  const save = async (e) => { e.preventDefault(); setSaving(true); const data = Object.fromEntries(new FormData(e.currentTarget)); data.monthly_rent = Number(data.monthly_rent); data.property_name = propName(data.property_id); editing?.id ? await base44.entities.Contract.update(editing.id, data) : await base44.entities.Contract.create(data); await load(); setSaving(false); closeForm(); };
+  const save = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    const data = Object.fromEntries(new FormData(e.currentTarget));
+    data.monthly_rent = Number(data.monthly_rent);
+    data.property_name = propName(data.property_id);
+    try {
+      editing?.id ? await base44.entities.Contract.update(editing.id, data) : await base44.entities.Contract.create(data);
+      await load();
+      closeForm();
+      toast({ title: 'Contratto salvato', description: 'Il contratto è stato registrato su Supabase.' });
+    } catch (error) {
+      toast({ variant: 'destructive', title: 'Salvataggio non riuscito', description: error.message || 'Riprova tra qualche minuto.' });
+    } finally {
+      setSaving(false);
+    }
+  };
   const remove = async (c) => { if (!await confirm({ title: 'Elimina contratto', description: `Eliminare il contratto di "${c.property_name}"?`, destructive: true, confirmLabel: 'Elimina' })) return; await base44.entities.Contract.delete(c.id); await load(); };
   return <AppShell>
     <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-sm font-bold uppercase tracking-[0.18em] text-teal-700 dark:text-teal-400">Documenti</p><h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Contratti</h1><p className="mt-2 text-slate-500 dark:text-slate-400">Carica e consulta i PDF dei contratti di locazione.</p></div><button onClick={() => { setEditing(null); openForm(); }} className="flex items-center justify-center gap-2 rounded-xl bg-slate-900 dark:bg-slate-100 px-5 py-3 font-semibold text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-200"><Plus size={18} /> Carica contratto</button></div>

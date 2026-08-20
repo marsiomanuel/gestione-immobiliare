@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Trash2, TrendingUp, MapPin, Ruler } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useConfirm } from '@/components/ConfirmProvider';
+import { toast } from '@/components/ui/use-toast';
 import AppShell from '@/components/AppShell';
 import EvaluationCalculator from '@/components/evaluations/EvaluationCalculator';
 import { computeEvaluation, euro, pct } from '@/components/evaluations/evaluationMath';
@@ -13,7 +14,18 @@ export default function Evaluations() {
   const [evals, setEvals] = useState([]), [loading, setLoading] = useState(true), [saving, setSaving] = useState(false);
   const load = () => base44.entities.Evaluation.list('-created_date').then(setEvals).finally(() => setLoading(false));
   useEffect(() => { load(); }, []);
-  const save = async (data) => { setSaving(true); await base44.entities.Evaluation.create(data); await load(); setSaving(false); };
+  const save = async (data) => {
+    setSaving(true);
+    try {
+      await base44.entities.Evaluation.create(data);
+      await load();
+      toast({ title: 'Valutazione salvata', description: 'La valutazione è stata registrata su Supabase.' });
+    } catch (error) {
+      toast({ variant: 'destructive', title: 'Salvataggio non riuscito', description: error.message || 'Riprova tra qualche minuto.' });
+    } finally {
+      setSaving(false);
+    }
+  };
   const remove = async (e) => { if (!await confirm({ title: 'Elimina valutazione', description: 'Eliminare questa valutazione?', destructive: true, confirmLabel: 'Elimina' })) return; await base44.entities.Evaluation.delete(e.id); await load(); };
   const summary = useMemo(() => {
     const acquisti = evals.filter((e) => e.type === 'acquisto');

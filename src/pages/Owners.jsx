@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Plus, Users } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useConfirm } from '@/components/ConfirmProvider';
+import { toast } from '@/components/ui/use-toast';
 import { useModalParam } from '@/hooks/useModalParam';
 import AppShell from '@/components/AppShell';
 import OwnerCard from '@/components/owners/OwnerCard';
@@ -17,7 +18,21 @@ export default function Owners() {
   useEffect(() => { load(); }, []);
   const countFor = (id) => properties.filter((p) => p.owner_id === id).length;
   const rentFor = (id) => properties.filter((p) => p.owner_id === id).reduce((s, p) => s + (p.monthly_rent || 0), 0);
-  const save = async (e) => { e.preventDefault(); setSaving(true); const data = Object.fromEntries(new FormData(e.currentTarget)); editing?.id ? await base44.entities.Owner.update(editing.id, data) : await base44.entities.Owner.create(data); await load(); setSaving(false); closeForm(); };
+  const save = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    const data = Object.fromEntries(new FormData(e.currentTarget));
+    try {
+      editing?.id ? await base44.entities.Owner.update(editing.id, data) : await base44.entities.Owner.create(data);
+      await load();
+      closeForm();
+      toast({ title: 'Proprietario salvato', description: 'Le informazioni sono state registrate su Supabase.' });
+    } catch (error) {
+      toast({ variant: 'destructive', title: 'Salvataggio non riuscito', description: error.message || 'Riprova tra qualche minuto.' });
+    } finally {
+      setSaving(false);
+    }
+  };
   const remove = async (o) => { if (!await confirm({ title: 'Elimina proprietario', description: `Eliminare "${o.name}"?`, destructive: true, confirmLabel: 'Elimina' })) return; await base44.entities.Owner.delete(o.id); await load(); };
   return <AppShell>
     <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-sm font-bold uppercase tracking-[0.18em] text-teal-700 dark:text-teal-400">Anagrafica</p><h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Proprietari</h1><p className="mt-2 text-slate-500 dark:text-slate-400">Gestisci immobili di diversi proprietari (persone o società).</p></div><button onClick={() => { setEditing(null); openForm(); }} className="flex items-center justify-center gap-2 rounded-xl bg-slate-900 dark:bg-slate-100 px-5 py-3 font-semibold text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-200"><Plus size={18} /> Aggiungi proprietario</button></div>
