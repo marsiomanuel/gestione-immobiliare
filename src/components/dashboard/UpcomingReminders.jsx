@@ -1,0 +1,9 @@
+import { Bell, Check } from 'lucide-react';
+
+const typeStyle = { incasso_affitto: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400', pagamento_spesa: 'bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-400', dichiarazione_tasse: 'bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-400', scadenza_contratto: 'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-400', altro: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400' };
+const typeLabel = { incasso_affitto: 'Affitto', pagamento_spesa: 'Spesa', dichiarazione_tasse: 'Tasse', scadenza_contratto: 'Contratto', altro: 'Altro' };
+
+export default function UpcomingReminders({ reminders, onToggle }) {
+  if (!reminders.length) return <p className="text-sm text-slate-500 dark:text-slate-400">Nessun promemoria imminente.</p>;
+  return <ul className="space-y-2">{reminders.map((r) => <li key={r.id} className="flex items-center gap-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3.5"><span className={`rounded-lg px-2.5 py-1 text-xs font-semibold ${typeStyle[r.type]}`}>{typeLabel[r.type]}</span><div className="flex-1"><p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{r.title}</p><p className="text-xs text-slate-500 dark:text-slate-400">{new Date(r.date).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' })}{r.recurring ? ` · ${r.frequency}` : ''}</p></div>{r.property_name && <span className="hidden text-xs text-slate-400 dark:text-slate-500 sm:block">{r.property_name}</span>}<button onClick={() => onToggle(r)} className={`rounded-lg p-2 ${r.status === 'completato' ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900 dark:text-emerald-400' : 'bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}`}><Check size={16} /></button></li>)}</ul>;
+}

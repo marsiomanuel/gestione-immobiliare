@@ -1,0 +1,113 @@
+{
+  "name": "Property",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "address": {
+      "type": "string"
+    },
+    "city": {
+      "type": "string"
+    },
+    "property_type": {
+      "type": "string",
+      "enum": [
+        "appartamento",
+        "casa",
+        "ufficio",
+        "negozio",
+        "terreno",
+        "altro"
+      ],
+      "default": "appartamento"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "occupato",
+        "libero",
+        "manutenzione"
+      ],
+      "default": "libero"
+    },
+    "owner_id": {
+      "type": "string"
+    },
+    "owner_name": {
+      "type": "string"
+    },
+    "rent_type": {
+      "type": "string",
+      "enum": [
+        "concordato",
+        "libero",
+        "scrittura_privata"
+      ],
+      "default": "libero"
+    },
+    "tax_regime": {
+      "type": "string",
+      "enum": [
+        "cedolare_secca",
+        "irpef"
+      ],
+      "default": "cedolare_secca"
+    },
+    "tax_rate": {
+      "type": "number",
+      "default": 21
+    },
+    "ownership_percentage": {
+      "type": "number",
+      "default": 100
+    },
+    "monthly_rent": {
+      "type": "number",
+      "default": 0
+    },
+    "condo_fee": {
+      "type": "number",
+      "default": 0
+    },
+    "monthly_costs": {
+      "type": "number",
+      "default": 0
+    },
+    "mortgage_payment": {
+      "type": "number",
+      "default": 0
+    },
+    "purchase_price": {
+      "type": "number",
+      "default": 0
+    },
+    "tenant_name": {
+      "type": "string"
+    },
+    "contract_end": {
+      "type": "string",
+      "format": "date"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "address",
+    "city"
+  ],
+  "rls": {
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}

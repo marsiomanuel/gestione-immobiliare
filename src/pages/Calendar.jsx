@@ -1,0 +1,38 @@
+import { useEffect, useState } from 'react';
+import { addMonths, format, isSameDay } from 'date-fns';
+import { it } from 'date-fns/locale';
+import { Plus, CalendarDays, Check, Pencil, Trash2 } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
+import { useConfirm } from '@/components/ConfirmProvider';
+import { toast } from '@/components/ui/use-toast';
+import { useModalParam } from '@/hooks/useModalParam';
+import AppShell from '@/components/AppShell';
+import CalendarView from '@/components/calendar/CalendarView';
+import ReminderForm from '@/components/calendar/ReminderForm';
+
+const typeStyle = { incasso_affitto: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400', pagamento_spesa: 'bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-400', dichiarazione_tasse: 'bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-400', scadenza_contratto: 'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-400', altro: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400' };
+const typeLabel = { incasso_affitto: 'Incasso affitto', pagamento_spesa: 'Pagamento spesa', dichiarazione_tasse: 'Dichiarazione tasse', scadenza_contratto: 'Scadenza contratto', altro: 'Altro' };
+
+function occursOn(r, date) { const rDate = new Date(r.date); if (!r.recurring) return isSameDay(rDate, date); if (isSameDay(rDate, date)) return true; if (date < rDate) return false; if (r.frequency === 'mensile') return rDate.getDate() === date.getDate(); if (r.frequency === 'trimestrale') { const m = (date.getFullYear() - rDate.getFullYear()) * 12 + date.getMonth() - rDate.getMonth(); return m % 3 === 0 && rDate.getDate() === date.getDate(); } if (r.frequency === 'annuale') return rDate.getMonth() === date.getMonth() && rDate.getDate() === date.getDate(); return isSameDay(rDate, date); }
+
+export default function Calendar() {
+  const confirm = useConfirm();
+  const [reminders, setReminders] = useState([]), [properties, setProperties] = useState([]), [loading, setLoading] = useState(true);
+  const [currentMonth, setCurrentMonth] = useState(new Date()), [selectedDate, setSelectedDate] = useState(new Date());
+  const { isOpen: formOpen, open: openForm, close: closeForm } = useModalParam('reminder-form');
+  const [editing, setEditing] = useState(null), [saving, setSaving] = useState(false);
+  const load = () => Promise.all([base44.entities.Reminder.list('date', 200), base44.entities.Property.list('-created_date')]).then(([r, p]) => { setReminders(r); setProperties(p); }).finally(() => setLoading(false));
+  useEffect(() => { load(); }, []);
+  const dayReminders = reminders.filter((r) => occursOn(r, selectedDate));
+  const save = async (e) => { e.preventDefault(); setSaving(true); const data = Object.fromEntries(new FormData(e.currentTarget)); data.recurring = data.recurring === 'on'; data.property_name = properties.find((p) => p.id === data.property_id)?.name || ''; const prev = reminders; if (editing?.id) { setReminders(reminders.map((x) => x.id === editing.id ? { ...x, ...data } : x)); try { await base44.entities.Reminder.update(editing.id, data); closeForm(); } catch { setReminders(prev); toast({ variant: 'destructive', title: 'Errore', description: 'Aggiornamento non riuscito' }); } } else { const tempId = 'temp-' + Date.now(); setReminders([{ ...data, id: tempId }, ...reminders]); try { const created = await base44.entities.Reminder.create(data); setReminders((p) => [created, ...p.filter((x) => x.id !== tempId)]); closeForm(); } catch { setReminders(prev); toast({ variant: 'destructive', title: 'Errore', description: 'Creazione non riuscita' }); } } setSaving(false); };
+  const remove = async (r) => { if (!await confirm({ title: 'Elimina promemoria', description: `Eliminare "${r.title}"?`, destructive: true, confirmLabel: 'Elimina' })) return; const prev = reminders; setReminders(reminders.filter((x) => x.id !== r.id)); try { await base44.entities.Reminder.delete(r.id); } catch { setReminders(prev); toast({ variant: 'destructive', title: 'Errore', description: 'Eliminazione non riuscita' }); } };
+  const toggle = async (r) => { const newStatus = r.status === 'attivo' ? 'completato' : 'attivo'; setReminders(prev => prev.map(x => x.id === r.id ? { ...x, status: newStatus } : x)); await base44.entities.Reminder.update(r.id, { status: newStatus }); };
+  return <AppShell>
+    <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-sm font-bold uppercase tracking-[0.18em] text-teal-700 dark:text-teal-400">Agenda</p><h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Calendario scadenze</h1><p className="mt-2 text-slate-500 dark:text-slate-400">Affitti da incassare, spese da pagare, dichiarazioni fiscali.</p></div><button onClick={() => { setEditing(null); openForm(); }} className="flex items-center justify-center gap-2 rounded-xl bg-slate-900 dark:bg-slate-100 px-5 py-3 font-semibold text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-200"><Plus size={18} /> Nuovo promemoria</button></div>
+    <div className="mt-8 grid gap-6 lg:grid-cols-3">
+      <div className="lg:col-span-2">{loading ? <div className="py-16 text-center text-slate-500 dark:text-slate-400">Caricamento…</div> : <CalendarView currentMonth={currentMonth} onPrev={() => setCurrentMonth(addMonths(currentMonth, -1))} onNext={() => setCurrentMonth(addMonths(currentMonth, 1))} reminders={reminders} selectedDate={selectedDate} onSelect={setSelectedDate} />}</div>
+      <div><div className="mb-4 flex items-center gap-2"><CalendarDays size={18} className="text-slate-700 dark:text-slate-300" /><h2 className="text-xl font-bold capitalize">{format(selectedDate, 'd MMMM yyyy', { locale: it })}</h2></div>{dayReminders.length ? <ul className="space-y-2">{dayReminders.map((r) => <li key={r.id} className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3.5"><div className="flex items-start justify-between gap-2"><div className="flex-1"><span className={`rounded-lg px-2.5 py-0.5 text-xs font-semibold ${typeStyle[r.type]}`}>{typeLabel[r.type]}</span><p className="mt-2 text-sm font-semibold text-slate-900 dark:text-slate-100">{r.title}</p>{r.description && <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{r.description}</p>}{r.property_name && <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">{r.property_name}</p>}{r.recurring && <p className="mt-1 text-xs font-semibold text-teal-600 dark:text-teal-400">Ripeti: {r.frequency}</p>}</div><div className="flex gap-1"><button onClick={() => toggle(r)} className={`rounded-lg p-1.5 ${r.status === 'completato' ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900 dark:text-emerald-400' : 'bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500'}`}><Check size={15} /></button><button onClick={() => { setEditing(r); openForm(); }} className="rounded-lg bg-slate-100 dark:bg-slate-800 p-1.5 text-slate-500 dark:text-slate-400"><Pencil size={15} /></button><button onClick={() => remove(r)} className="rounded-lg bg-slate-100 dark:bg-slate-800 p-1.5 text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400"><Trash2 size={15} /></button></div></div></li>)}</ul> : <div className="rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 py-12 text-center"><p className="text-sm text-slate-500 dark:text-slate-400">Nessun promemoria per questo giorno.</p></div>}</div>
+    </div>
+    <ReminderForm isOpen={formOpen} reminder={editing || {}} properties={properties} onSubmit={save} onClose={closeForm} saving={saving} defaultDate={format(selectedDate, 'yyyy-MM-dd')} />
+  </AppShell>;
+}

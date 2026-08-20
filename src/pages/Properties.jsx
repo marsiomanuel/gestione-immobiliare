@@ -1,0 +1,30 @@
+import { useEffect, useMemo, useState } from 'react';
+import { Plus, Search, Building2 } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
+import { useConfirm } from '@/components/ConfirmProvider';
+import { toast } from '@/components/ui/use-toast';
+import { useModalParam } from '@/hooks/useModalParam';
+import StyledSelect from '@/components/StyledSelect';
+import StickyFilters from '@/components/StickyFilters';
+import AppShell from '@/components/AppShell';
+import PullRefresh from '@/components/PullRefresh';
+import PropertyCard from '@/components/properties/PropertyCard';
+import PropertyForm from '@/components/properties/PropertyForm';
+
+export default function Properties() {
+  const confirm = useConfirm();
+  const [properties, setProperties] = useState([]), [owners, setOwners] = useState([]), [contracts, setContracts] = useState([]), [loading, setLoading] = useState(true);
+  const { isOpen: formOpen, open: openForm, close: closeForm } = useModalParam('property-form');
+  const [editing, setEditing] = useState(null), [saving, setSaving] = useState(false), [search, setSearch] = useState(''), [ownerFilter, setOwnerFilter] = useState('all');
+  const load = () => Promise.all([base44.entities.Property.list('-created_date'), base44.entities.Owner.list('-created_date'), base44.entities.Contract.list('-created_date')]).then(([p, o, c]) => { setProperties(p); setOwners(o); setContracts(c); }).finally(() => setLoading(false));
+  useEffect(() => { load(); }, []);
+  const visible = useMemo(() => properties.filter((p) => (ownerFilter === 'all' || p.owner_id === ownerFilter) && `${p.name} ${p.address} ${p.city}`.toLowerCase().includes(search.toLowerCase())), [properties, search, ownerFilter]);
+  const save = async (e) => { e.preventDefault(); setSaving(true); const data = Object.fromEntries(new FormData(e.currentTarget)); data.monthly_rent = Number(data.monthly_rent); data.monthly_costs = Number(data.monthly_costs); data.tax_rate = Number(data.tax_rate); data.purchase_price = Number(data.purchase_price); data.condo_fee = Number(data.condo_fee); data.ownership_percentage = Number(data.ownership_percentage); data.mortgage_payment = Number(data.mortgage_payment); data.owner_name = owners.find((o) => o.id === data.owner_id)?.name || ''; const prev = properties; if (editing?.id) { setProperties(properties.map((x) => x.id === editing.id ? { ...x, ...data } : x)); try { await base44.entities.Property.update(editing.id, data); closeForm(); } catch { setProperties(prev); toast({ variant: 'destructive', title: 'Errore', description: 'Aggiornamento non riuscito' }); } } else { const tempId = 'temp-' + Date.now(); setProperties([{ ...data, id: tempId }, ...properties]); try { const created = await base44.entities.Property.create(data); setProperties((p) => [created, ...p.filter((x) => x.id !== tempId)]); closeForm(); } catch { setProperties(prev); toast({ variant: 'destructive', title: 'Errore', description: 'Creazione non riuscita' }); } } setSaving(false); };
+  const remove = async (p) => { if (!await confirm({ title: 'Elimina immobile', description: `Eliminare "${p.name}"?`, destructive: true, confirmLabel: 'Elimina' })) return; const prev = properties; setProperties(properties.filter((x) => x.id !== p.id)); try { await base44.entities.Property.delete(p.id); } catch { setProperties(prev); toast({ variant: 'destructive', title: 'Errore', description: 'Eliminazione non riuscita' }); } };
+  return <AppShell>
+    <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-sm font-bold uppercase tracking-[0.18em] text-teal-700 dark:text-teal-400">Portafoglio</p><h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Immobili</h1></div><button onClick={() => { setEditing(null); openForm(); }} className="flex items-center justify-center gap-2 rounded-xl bg-slate-900 dark:bg-slate-100 px-5 py-3 font-semibold text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-200"><Plus size={18} /> Aggiungi immobile</button></div>
+    <StickyFilters><div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"><h2 className="text-base font-bold sm:text-xl">Tutti gli immobili</h2><div className="flex flex-col gap-3 sm:flex-row"><StyledSelect value={ownerFilter} onChange={setOwnerFilter} placeholder="Tutti i proprietari" options={[{ value: 'all', label: 'Tutti i proprietari' }, ...owners.map((o) => ({ value: o.id, label: o.name }))]} /><label className="flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2.5 text-slate-500 dark:text-slate-400"><Search size={17} /><input value={search} onChange={(e) => setSearch(e.target.value)} className="w-full bg-transparent text-sm text-slate-900 dark:text-slate-100 outline-none sm:w-56" placeholder="Cerca…" /></label></div></div></StickyFilters>
+    {loading ? <div className="py-16 text-center text-slate-500 dark:text-slate-400">Caricamento…</div> : visible.length ? <PullRefresh onRefresh={load}><div className="mt-5 grid gap-5 md:grid-cols-2 xl:grid-cols-3">{visible.map((item) => <PropertyCard key={item.id} property={item} contract={contracts.find((c) => c.property_id === item.id)} onEdit={(p) => { setEditing(p); openForm(); }} onDelete={remove} />)}</div></PullRefresh> : <div className="mt-5 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 py-16 text-center"><Building2 size={32} className="mx-auto text-slate-300 dark:text-slate-600" /><p className="mt-3 font-semibold text-slate-800 dark:text-slate-200">Nessun immobile</p><p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Aggiungi la tua prima proprietà.</p></div>}
+    <PropertyForm isOpen={formOpen} property={editing || {}} owners={owners} onSubmit={save} onClose={closeForm} saving={saving} />
+  </AppShell>;
+}

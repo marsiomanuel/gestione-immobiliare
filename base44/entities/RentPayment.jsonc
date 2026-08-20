@@ -1,0 +1,79 @@
+{
+  "name": "RentPayment",
+  "type": "object",
+  "properties": {
+    "property_id": {
+      "type": "string"
+    },
+    "property_name": {
+      "type": "string"
+    },
+    "tenant_name": {
+      "type": "string"
+    },
+    "month": {
+      "type": "string",
+      "format": "date"
+    },
+    "rent_amount": {
+      "type": "number",
+      "default": 0
+    },
+    "condo_fee": {
+      "type": "number",
+      "default": 0
+    },
+    "condo_expense": {
+      "type": "number",
+      "default": 0
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "atteso",
+        "pagato",
+        "parzialmente_pagato",
+        "in_ritardo"
+      ],
+      "default": "atteso"
+    },
+    "paid_amount": {
+      "type": "number",
+      "default": 0
+    },
+    "paid_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "receipt_url": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "payment_type": {
+      "type": "string",
+      "enum": [
+        "affitto",
+        "anticipo",
+        "caparra"
+      ],
+      "default": "affitto"
+    }
+  },
+  "required": [
+    "property_id",
+    "month"
+  ],
+  "rls": {
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}

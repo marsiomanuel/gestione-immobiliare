@@ -1,0 +1,42 @@
+{
+  "description": "Crea un evento su Google Calendar con notifica quando viene registrato un nuovo pagamento di affitto",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "create"
+      ],
+      "entity_name": "RentPayment"
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "rent_payment_to_calendar",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "create_event": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "createCalendarEvent",
+            "args": {
+              "title": "Pagamento affitto - ${ .trigger.data.property_name }",
+              "description": "Scadenza canone mensile",
+              "date": "${ .trigger.data.month }"
+            }
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Crea evento calendario",
+            "description": "Invia scadenza pagamento a Google Calendar"
+          }
+        }
+      }
+    ]
+  },
+  "name": "Rent Payment to Google Calendar"
+}

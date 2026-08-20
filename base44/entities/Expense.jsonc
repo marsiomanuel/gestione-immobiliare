@@ -1,0 +1,79 @@
+{
+  "name": "Expense",
+  "type": "object",
+  "properties": {
+    "property_id": {
+      "type": "string"
+    },
+    "property_name": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "condominio",
+        "straordinaria",
+        "intervento_futuro",
+        "tassa",
+        "manutenzione",
+        "altro"
+      ],
+      "default": "condominio"
+    },
+    "description": {
+      "type": "string"
+    },
+    "amount": {
+      "type": "number",
+      "default": 0
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "recurring": {
+      "type": "boolean",
+      "default": false
+    },
+    "frequency": {
+      "type": "string",
+      "enum": [
+        "mensile",
+        "trimestrale",
+        "annuale",
+        "una_tantum"
+      ],
+      "default": "una_tantum"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pagata",
+        "da_pagare"
+      ],
+      "default": "da_pagare"
+    },
+    "installment_number": {
+      "type": "number"
+    },
+    "installment_total": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "description",
+    "amount",
+    "date"
+  ],
+  "rls": {
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}

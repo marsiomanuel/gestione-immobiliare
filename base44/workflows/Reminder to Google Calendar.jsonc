@@ -1,0 +1,42 @@
+{
+  "description": "Crea un evento su Google Calendar con notifica quando viene inserita una nuova scadenza o attivit\u00e0",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "create"
+      ],
+      "entity_name": "Reminder"
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "reminder_to_calendar",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "create_event": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "createCalendarEvent",
+            "args": {
+              "title": "${ .trigger.data.title }",
+              "description": "${ .trigger.data.description }",
+              "date": "${ .trigger.data.date }"
+            }
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Crea evento calendario",
+            "description": "Invia scadenza a Google Calendar"
+          }
+        }
+      }
+    ]
+  },
+  "name": "Reminder to Google Calendar"
+}

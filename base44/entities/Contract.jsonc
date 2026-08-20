@@ -1,0 +1,56 @@
+{
+  "name": "Contract",
+  "type": "object",
+  "properties": {
+    "property_id": {
+      "type": "string"
+    },
+    "property_name": {
+      "type": "string"
+    },
+    "file_url": {
+      "type": "string"
+    },
+    "file_name": {
+      "type": "string"
+    },
+    "tenant_name": {
+      "type": "string"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "rent_type": {
+      "type": "string",
+      "enum": [
+        "concordato",
+        "libero"
+      ],
+      "default": "libero"
+    },
+    "monthly_rent": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "property_id",
+    "file_url"
+  ],
+  "rls": {
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}

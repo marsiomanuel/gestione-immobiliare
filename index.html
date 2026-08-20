@@ -1,51 +1,13 @@
 <!doctype html>
-<html lang="it">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#123c33">
-  <meta name="description" content="Gestione Immobiliare: immobili, proprietari, affitti e scadenze in un'unica app.">
-  <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="styles.css">
-  <title>Gestione Immobiliare</title>
-</head>
-<body>
-  <aside class="sidebar">
-    <div class="brand"><span class="brand-mark">GI</span><div><strong>Gestione</strong><small>Immobiliare</small></div></div>
-    <nav id="nav">
-      <button class="nav-item active" data-view="dashboard">▦ <span>Dashboard</span></button>
-      <button class="nav-item" data-view="immobili">⌂ <span>Immobili</span></button>
-      <button class="nav-item" data-view="proprietari">♙ <span>Proprietari</span></button>
-      <button class="nav-item" data-view="movimenti">€ <span>Movimenti</span></button>
-      <button class="nav-item" data-view="scadenze">◷ <span>Scadenze</span></button>
-    </nav>
-    <div class="sidebar-footer"><span class="status-dot"></span> Dati salvati sul dispositivo</div>
-  </aside>
-
-  <main>
-    <header>
-      <button id="menuBtn" class="icon-btn" aria-label="Apri menu">☰</button>
-      <div><p class="eyebrow">PATRIMONIO IMMOBILIARE</p><h1 id="pageTitle">Dashboard</h1></div>
-      <button id="primaryAction" class="primary-btn">+ Nuovo immobile</button>
-    </header>
-
-    <section id="dashboard" class="view active">
-      <div class="welcome"><div><span class="pill">PANORAMICA</span><h2>Il tuo patrimonio, sotto controllo.</h2><p>Canoni, spese e scadenze degli immobili in un unico posto.</p></div><div class="month"><small>MESE CORRENTE</small><strong id="currentMonth"></strong></div></div>
-      <div class="kpi-grid" id="kpis"></div>
-      <div class="content-grid">
-        <article class="panel"><div class="panel-head"><div><small>PORTAFOGLIO</small><h3>I tuoi immobili</h3></div><button class="text-btn" data-go="immobili">Vedi tutti →</button></div><div id="propertyPreview"></div></article>
-        <article class="panel"><div class="panel-head"><div><small>AGENDA</small><h3>Prossime scadenze</h3></div><button class="text-btn" data-go="scadenze">Gestisci →</button></div><div id="deadlinePreview"></div></article>
-      </div>
-    </section>
-
-    <section id="immobili" class="view"><div class="section-head"><div><h2>Patrimonio immobiliare</h2><p>Gestisci unità, rendite e proprietari.</p></div><select id="ownerFilter"><option value="">Tutti i proprietari</option></select></div><div id="propertyGrid" class="cards-grid"></div></section>
-    <section id="proprietari" class="view"><div class="section-head"><div><h2>Proprietari</h2><p>Quote e patrimonio suddivisi per intestatario.</p></div><button class="secondary-btn" data-modal="owner">+ Proprietario</button></div><div id="ownerGrid" class="cards-grid"></div></section>
-    <section id="movimenti" class="view"><div class="section-head"><div><h2>Entrate e uscite</h2><p>Registra canoni, condominio, manutenzioni e imposte.</p></div><button class="secondary-btn" data-modal="movement">+ Movimento</button></div><div class="panel table-wrap"><table><thead><tr><th>Data</th><th>Immobile</th><th>Descrizione</th><th>Tipo</th><th>Importo</th></tr></thead><tbody id="movementRows"></tbody></table></div></section>
-    <section id="scadenze" class="view"><div class="section-head"><div><h2>Scadenze</h2><p>Contratti, pagamenti, imposte e manutenzioni.</p></div><button class="secondary-btn" data-modal="deadline">+ Scadenza</button></div><div id="deadlineList" class="deadline-list"></div></section>
-  </main>
-
-  <dialog id="modal"><form id="entityForm" method="dialog"><div class="modal-head"><div><small id="modalEyebrow">NUOVO</small><h2 id="modalTitle">Immobile</h2></div><button value="cancel" class="icon-btn">×</button></div><div id="formFields" class="form-grid"></div><div class="modal-actions"><button value="cancel" class="secondary-btn">Annulla</button><button id="saveBtn" value="default" class="primary-btn">Salva</button></div></form></dialog>
-  <div id="toast" role="status"></div>
-  <script src="app.js"></script>
-</body>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="https://base44.com/logo_v2.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Gestione Immobiliare</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
 </html>
