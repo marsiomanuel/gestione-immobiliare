@@ -1,4 +1,4 @@
-import { Bell, Check } from 'lucide-react';
+import { Check } from 'lucide-react';
 
 const typeStyle = { incasso_affitto: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400', pagamento_spesa: 'bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-400', dichiarazione_tasse: 'bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-400', scadenza_contratto: 'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-400', altro: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400' };
 const typeLabel = { incasso_affitto: 'Affitto', pagamento_spesa: 'Spesa', dichiarazione_tasse: 'Tasse', scadenza_contratto: 'Contratto', altro: 'Altro' };

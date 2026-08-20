@@ -31,3 +31,17 @@ export function safeReturnTo() {
     return "/";
   }
 }
+
+// Resolve an internal route under Vite's deployment base. This keeps auth
+// redirects inside /gestione-immobiliare/ on GitHub Pages and at / on Base44.
+export function appUrl(path = '/') {
+  const base = import.meta.env.BASE_URL || '/';
+  const normalizedBase = base.endsWith('/') ? base : `${base}/`;
+  if (!path || path === '/') return new URL(normalizedBase, window.location.origin).href;
+  const cleanPath = path.replace(/^\/+/, '');
+  const cleanBase = normalizedBase.replace(/^\/+|\/+$/g, '');
+  if (cleanBase && (cleanPath === cleanBase || cleanPath.startsWith(`${cleanBase}/`))) {
+    return new URL(`/${cleanPath}`, window.location.origin).href;
+  }
+  return new URL(`${normalizedBase}${cleanPath}`, window.location.origin).href;
+}
