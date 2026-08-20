@@ -1,4 +1,4 @@
-name: Deploy Gestione Immobiliare
+name: Deploy GitHub Pages
 
 on:
   push:
@@ -15,40 +15,30 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-and-deploy:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install
+      - run: npm run build
+        env:
+          VITE_SUPABASE_URL: https://vgcmyjtmvgpgrwnsdhlj.supabase.co
+          VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_0iSMPEciYe4bSUujlm9DVg_xqJsNTZ-
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+    needs: build
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build
-        env:
-          VITE_BASE_PATH: /gestione-immobiliare/
-          VITE_BASE44_APP_ID: 6a8429da5aee7e4ad77dfd81
-          VITE_BASE44_APP_BASE_URL: https://accomplished-prop-flow-home.base44.app
-        run: |
-          npm run build
-          cp dist/index.html dist/404.html
-
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist
-
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4

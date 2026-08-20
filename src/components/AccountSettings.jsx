@@ -16,8 +16,8 @@ export default function AccountSettings({ onClose }) {
     try {
       await base44.entities.User.delete(user.id);
       await base44.auth.logout('/login');
-    } catch (e) {
-      setError("Impossibile eliminare l'account dal pannello. Contatta il supporto Base44 per procedere.");
+    } catch {
+      setError("Impossibile eliminare l'account. Riprova tra qualche minuto.");
       setDeleting(false);
     }
   };
