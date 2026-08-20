@@ -15,6 +15,7 @@ import RentPayments from '@/pages/RentPayments';
 import Owners from '@/pages/Owners';
 import Evaluations from '@/pages/Evaluations';
 import Analytics from '@/pages/Analytics';
+import Admin from '@/pages/Admin';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import ForgotPassword from '@/pages/ForgotPassword';
@@ -27,6 +28,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 function AnimatedRoutes() {
   const location = useLocation();
+  const { isAdmin } = useAuth();
   return (
     <AnimatePresence mode="wait">
       <motion.div key={location.pathname} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
@@ -45,6 +47,7 @@ function AnimatedRoutes() {
             <Route path="/proprietari" element={<Owners />} />
             <Route path="/valutazioni" element={<Evaluations />} />
             <Route path="/analisi" element={<Analytics />} />
+            <Route path="/amministrazione" element={isAdmin ? <Admin /> : <Navigate to="/" replace />} />
           </Route>
           <Route path="*" element={<PageNotFound />} />
         </Routes>

@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { scrollPositions } from '@/utils/scrollPositions';
-import { Building2, LayoutDashboard, Wallet, FileText, CalendarDays, CircleDollarSign, Users, LogOut, Menu, TrendingUp, Settings, BarChart3 } from 'lucide-react';
+import { Building2, LayoutDashboard, Wallet, FileText, CalendarDays, CircleDollarSign, Users, LogOut, Menu, TrendingUp, Settings, BarChart3, ShieldCheck } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import AccountSettings from '@/components/AccountSettings';
 
@@ -28,6 +29,7 @@ const mainTabs = [
 const linkClass = ({ isActive }) => `flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-semibold transition ${isActive ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`;
 
 export default function AppShell({ children }) {
+  const { isAdmin } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const location = useLocation();
@@ -42,10 +44,11 @@ export default function AppShell({ children }) {
       scrollPositions.set(location.pathname, window.scrollY);
     };
   }, [location.pathname]);
+  const visibleNavItems = isAdmin ? [...navItems, { to: '/amministrazione', label: 'Amministrazione', icon: ShieldCheck }] : navItems;
   return <div className="min-h-screen bg-[#f4f6f5] text-slate-900 dark:bg-slate-950 dark:text-slate-100">
     <aside className="fixed inset-y-0 left-0 hidden w-60 flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 md:flex">
       <div className="flex items-center gap-3 px-6 py-5"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"><Building2 size={20} /></span><div><p className="font-bold leading-tight">Gestione Immobiliare</p><p className="text-xs text-slate-500 dark:text-slate-400">Portafoglio proprietà</p></div></div>
-      <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">{navItems.map((item) => <NavLink key={item.to} to={item.to} end={item.end} className={linkClass}><item.icon size={18} /> {item.label}</NavLink>)}</nav>
+      <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">{visibleNavItems.map((item) => <NavLink key={item.to} to={item.to} end={item.end} className={linkClass}><item.icon size={18} /> {item.label}</NavLink>)}</nav>
       <div className="space-y-1 border-t border-slate-200 dark:border-slate-800 px-3 py-4">
         <button onClick={() => setAccountOpen(true)} className="flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-[0.98]"><Settings size={18} /> Account</button>
         <button onClick={() => base44.auth.logout('/login')} className="flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-[0.98]"><LogOut size={18} /> Esci</button>
@@ -65,7 +68,7 @@ export default function AppShell({ children }) {
         <div className="mx-auto mb-2 h-1.5 w-10 rounded-full bg-slate-300 dark:bg-slate-700" />
         <SheetHeader><SheetTitle className="dark:text-slate-100">Menu</SheetTitle></SheetHeader>
         <nav className="mt-4 grid grid-cols-3 gap-2">
-          {navItems.map((item) => <NavLink key={item.to} to={item.to} end={item.end} onClick={() => setMenuOpen(false)} className={({ isActive }) => `flex flex-col items-center gap-2 rounded-xl p-3 text-xs font-semibold transition active:scale-[0.95] ${isActive ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'}`}><item.icon size={22} /> {item.label}</NavLink>)}
+          {visibleNavItems.map((item) => <NavLink key={item.to} to={item.to} end={item.end} onClick={() => setMenuOpen(false)} className={({ isActive }) => `flex flex-col items-center gap-2 rounded-xl p-3 text-xs font-semibold transition active:scale-[0.95] ${isActive ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'}`}><item.icon size={22} /> {item.label}</NavLink>)}
         </nav>
         <div className="mt-3 grid grid-cols-2 gap-2">
           <button onClick={() => { setMenuOpen(false); setAccountOpen(true); }} className="flex flex-col items-center gap-2 rounded-xl bg-slate-100 p-3 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-400 active:scale-[0.95]"><Settings size={22} /> Account</button>

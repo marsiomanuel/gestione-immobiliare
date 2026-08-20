@@ -10,7 +10,7 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
 });
 
 const tables = { Property: 'properties', Owner: 'owners', Contract: 'contracts', Expense: 'expenses', RentPayment: 'rent_payments', Reminder: 'reminders', Evaluation: 'evaluations' };
-const unwrap = (row) => ({ id: row.id, ...row.data, created_date: row.created_at, updated_date: row.updated_at });
+const unwrap = (row) => ({ id: row.id, user_id: row.user_id, ...row.data, created_date: row.created_at, updated_date: row.updated_at });
 const sortRows = (rows, sort = '-created_date') => {
   const descending = sort?.startsWith('-');
   const field = (sort || 'created_date').replace(/^-/, '');
@@ -50,7 +50,7 @@ const entityApi = (table) => ({
   },
   async update(id, values) {
     const current = await this.get(id);
-    const { id: _id, created_date: _created, updated_date: _updated, ...existing } = current;
+    const { id: _id, user_id: _userId, created_date: _created, updated_date: _updated, ...existing } = current;
     const { data, error } = await supabase.from(table).update({ data: { ...existing, ...values }, updated_at: new Date().toISOString() }).eq('id', id).select().single();
     if (error) throw error;
     return unwrap(data);
@@ -122,4 +122,12 @@ const integrations = { Core: { async UploadFile({ file }) {
   return { file_url: data.signedUrl, file_path: path };
 } } };
 
-export const base44 = { auth, entities, integrations, supabase };
+const admin = {
+  async listUsers() {
+    const { data, error } = await supabase.rpc('admin_list_users');
+    if (error) throw error;
+    return data;
+  },
+};
+
+export const base44 = { auth, entities, integrations, admin, supabase };
